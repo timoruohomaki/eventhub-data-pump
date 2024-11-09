@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/Azure/azure-event-hubs-go/v3"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
+	"os/signal"
 	"strconv"
+	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -39,5 +42,21 @@ func main() {
 	connStr := godotenv.Load("eventHubConnString")
 
 	hub, err := eventhub.NewHubFromConnectionString(connStr, err)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	// send test message
+
+	err = hub.Send(ctx, eventhub.NewEventFromString("hello, world!"))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 }
